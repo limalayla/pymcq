@@ -5,11 +5,15 @@ Created on Wed Apr 18 18:34:40 2018
 
 @author: limalayla
 """
+import sys
 
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm, mm
 from math import ceil
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+from dialog import Ui_MainWindow
 
 margin = [2*cm, 3*cm]
 question_size = [3.5*cm, 1*cm]
@@ -17,7 +21,7 @@ smallrect_size = [3*mm, 3*mm]
 smallrect_margin = [1*mm, 1*mm]
 mcqcounter = 0
 
-def create_mcq(pdf, doctitle, nmcq):
+def create_mcq(filename, doctitle, nmcq):
     pagesize = A4
     orig = [margin[0], pagesize[1]-margin[1]]
     pdf = Canvas(filename, pagesize)
@@ -43,7 +47,7 @@ def create_mcq(pdf, doctitle, nmcq):
     pdf.save()
 
 def draw_title(pdf, size, title):
-    pdf.drawCentredString(size[0]/2, size[1]-3*cm, doctitle)
+    pdf.drawCentredString(size[0]/2, size[1]-3*cm, title)
 
 def draw_line(pdf, pos):
     local_pos = list(pos)
@@ -81,8 +85,24 @@ def draw_question(pdf, pos):
         pdf.rect(smallrect_pos[0], smallrect_pos[1], smallrect_size[0], smallrect_size[1])
         smallrect_pos[0] += smallrect_size[0] + 1*mm
 
+
+class MainWin(QtWidgets.QMainWindow):
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.ui.pushButton.clicked.connect(self.generate)
+    
+    def generate(self):
+        filename = 'output.pdf'
+        doctitle = self.ui.lineEdit.text()
+        nmcq = self.ui.spinBox.value()
+        
+        create_mcq(filename, doctitle, nmcq)
+        self.close()
+
 if __name__=='__main__':
-    filename = 'example.pdf'
-    doctitle = 'Example MCQ'
-    nmcq = 200
-    create_mcq(filename, doctitle, nmcq)
+    app = QtWidgets.QApplication(sys.argv)
+    myapp = MainWin()
+    myapp.show()
+    app.exec_()
